@@ -80,11 +80,11 @@ class ProgressScreen(Screen):
 
         try:
             # Step 1: Get issue details (article list)
-            self.call_from_thread(self.update_progress, "Fetching issue details...", 0.05)
+            self.app.call_from_thread(self.update_progress, "Fetching issue details...", 0.05)
             issue_with_articles = scraper.get_issue_details(self.issue)
 
             # Step 2: Fetch cover image
-            self.call_from_thread(self.update_progress, "Downloading cover image...", 0.1)
+            self.app.call_from_thread(self.update_progress, "Downloading cover image...", 0.1)
             issue_with_articles.cover_image_data = scraper.fetch_cover_image(
                 issue_with_articles
             )
@@ -93,13 +93,13 @@ class ProgressScreen(Screen):
             total_articles = len(issue_with_articles.articles)
             for idx, article in enumerate(issue_with_articles.articles):
                 progress = 0.15 + (0.5 * (idx / total_articles))
-                self.call_from_thread(self.update_progress, f"Downloading: {article.title}", progress)
+                self.app.call_from_thread(self.update_progress, f"Downloading: {article.title}", progress)
 
                 if article.is_available:
                     article.html_content = scraper.get_article_content(article)
 
             # Step 4: Generate EPUB
-            self.call_from_thread(self.update_progress, "Generating EPUB...", 0.7)
+            self.app.call_from_thread(self.update_progress, "Generating EPUB...", 0.7)
 
             generator = EPUBGenerator(self.zine.display_name)
             filename = generate_filename(self.zine.display_name, issue_with_articles)
@@ -108,7 +108,7 @@ class ProgressScreen(Screen):
             def epub_progress_callback(message: str, percentage: float):
                 """Update progress from EPUB generator."""
                 progress = 0.7 + (0.3 * percentage)
-                self.call_from_thread(self.update_progress, message, progress)
+                self.app.call_from_thread(self.update_progress, message, progress)
 
             epub_path = generator.generate(
                 issue_with_articles, output_path, epub_progress_callback
