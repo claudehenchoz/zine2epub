@@ -18,12 +18,40 @@ class ClarkesworldScraper(BaseScraper):
         Returns:
             List of Issue objects sorted by date (most recent first)
         """
-        # Clarkesworld's back issues page
+        issues = []
+
+        # First, get the current issue from the homepage
+        try:
+            homepage_html = self.fetch_html(self.zine.base_url)
+            homepage_tree = self.parse_html(homepage_html)
+
+            # Get current issue number from meta description
+            meta_desc = homepage_tree.cssselect('meta[name="description"]')
+            if meta_desc:
+                desc = meta_desc[0].get('content', '')
+                issue_match = re.search(r'Issue\s+(\d+)', desc, re.I)
+                if issue_match:
+                    current_issue_num = int(issue_match.group(1))
+
+                    # Calculate current date (use current month/year)
+                    current_date = datetime.now().date()
+
+                    # Create current issue
+                    current_issue = Issue(
+                        number=current_issue_num,
+                        title=f"ISSUE {current_issue_num} – {current_date.strftime('%B %Y')}",
+                        issue_date=current_date,
+                        cover_url=f"{self.zine.base_url}/covers/cw_{current_issue_num}_large.jpg",
+                    )
+                    issues.append(current_issue)
+        except Exception:
+            # If we can't get the current issue, just continue with back issues
+            pass
+
+        # Now get back issues from the archive
         archive_url = f"{self.zine.base_url}/prior/"
         html_content = self.fetch_html(archive_url)
         tree = self.parse_html(html_content)
-
-        issues = []
 
         # Find all issue links
         # Format: <a href="https://clarkesworldmagazine.com/issue_220">ISSUE 220 – January 2025</a>
@@ -39,6 +67,10 @@ class ClarkesworldScraper(BaseScraper):
                 continue
 
             issue_num = int(issue_num_match.group(1))
+
+            # Skip if we already have this issue (current issue)
+            if any(i.number == issue_num for i in issues):
+                continue
 
             # Extract date from text (e.g., "ISSUE 220 – January 2025")
             date_match = re.search(r'(\w+)\s+(\d{4})', text)
@@ -82,9 +114,17 @@ class ClarkesworldScraper(BaseScraper):
         Returns:
             Issue object populated with articles
         """
-        # Construct issue URL (note: no trailing slash, uses underscore)
+        # Try to fetch the issue page
+        # Current issue might be on homepage, back issues have their own pages
         issue_url = f"{self.zine.base_url}/issue_{issue.number}"
-        html_content = self.fetch_html(issue_url)
+
+        try:
+            html_content = self.fetch_html(issue_url)
+        except Exception:
+            # If issue page doesn't exist, try the homepage (for current issue)
+            issue_url = self.zine.base_url
+            html_content = self.fetch_html(issue_url)
+
         tree = self.parse_html(html_content)
 
         # Extract cover image URL (already set in get_issues, but update if found)
