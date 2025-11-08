@@ -166,10 +166,23 @@ class LightspeedMagazineScraper(BaseScraper):
             if not url.startswith('http'):
                 url = self.zine.base_url.rstrip('/') + url
 
-            # Try to find author - look for "by Author Name" in the post
-            post_text = post.text_content()
-            author_match = re.search(r'by\s+([\w\s.]+?)(?:\s*\||$)', post_text, re.IGNORECASE)
-            author = author_match.group(1).strip() if author_match else "Unknown"
+            # Try to find author in postmetadata element
+            # Format: <p class="postmetadata"><em>by </em><a href="...">Author Name</a></p>
+            author = "Unknown"
+            metadata_elems = post.cssselect('p.postmetadata')
+            for meta in metadata_elems:
+                # Look for author links (not spotlight links)
+                author_links = meta.cssselect('a[href*="/authors/"]')
+                if author_links:
+                    author = author_links[0].text_content().strip()
+                    break
+
+            # Fallback: try to extract from text if not found
+            if author == "Unknown":
+                post_text = post.text_content()
+                author_match = re.search(r'by\s+([A-Z][A-Za-z\s.\'-]+?)(?=\s{2,}|\n|$)', post_text)
+                if author_match:
+                    author = author_match.group(1).strip()
 
             # Check availability
             is_available = True  # If there's a link, assume it's available
