@@ -19,11 +19,6 @@ class Article:
     html_content: Optional[str] = None
     is_available: bool = True  # False if marked as "coming soon"
 
-    def __post_init__(self):
-        """Validate article data."""
-        if not self.title or not self.author:
-            raise ValueError("Article must have title and author")
-
 
 @dataclass
 class Issue:
@@ -35,22 +30,6 @@ class Issue:
     cover_url: str
     articles: list[Article] = field(default_factory=list)
     cover_image_data: Optional[bytes] = None
-
-    @property
-    def is_complete(self) -> bool:
-        """Check if all articles in the issue are available."""
-        return all(article.is_available for article in self.articles)
-
-    @property
-    def date_str(self) -> str:
-        """Return formatted date string (YYYY-MM)."""
-        return self.issue_date.strftime("%Y-%m")
-
-    @property
-    def filename(self) -> str:
-        """Generate the EPUB filename for this issue."""
-        # Will be overridden with zine name in the scraper
-        return f"Issue{self.number:03d}_{self.date_str}.epub"
 
 
 @dataclass

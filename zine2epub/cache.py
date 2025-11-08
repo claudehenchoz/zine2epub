@@ -1,7 +1,6 @@
 """Caching system for HTML content and images."""
 
 import hashlib
-import json
 from pathlib import Path
 from typing import Optional
 
@@ -85,41 +84,6 @@ class Cache:
         try:
             with open(cache_path, mode, encoding=encoding) as f:
                 f.write(content)
-        except Exception:
-            pass  # Silently fail on cache write errors
-
-    def get_metadata(self, key: str) -> Optional[dict]:
-        """Retrieve cached metadata (e.g., issue lists).
-
-        Args:
-            key: The metadata key
-
-        Returns:
-            Metadata dictionary if available, None otherwise
-        """
-        cache_path = self._get_cache_path(key, ".json")
-
-        if not cache_path.exists():
-            return None
-
-        try:
-            with open(cache_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return None
-
-    def set_metadata(self, key: str, data: dict) -> None:
-        """Store metadata in cache.
-
-        Args:
-            key: The metadata key
-            data: The metadata to cache
-        """
-        cache_path = self._get_cache_path(key, ".json")
-
-        try:
-            with open(cache_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, default=str)
         except Exception:
             pass  # Silently fail on cache write errors
 

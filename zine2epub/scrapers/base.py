@@ -108,15 +108,6 @@ class BaseScraper(ABC):
         return html.fromstring(html_content)
 
     @abstractmethod
-    def get_issues(self) -> list[Issue]:
-        """Fetch and parse the list of available issues.
-
-        Returns:
-            List of Issue objects sorted by date (most recent first)
-        """
-        pass
-
-    @abstractmethod
     def get_issue_details(self, issue: Issue) -> Issue:
         """Fetch full details for an issue, including article list.
 
