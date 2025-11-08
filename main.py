@@ -53,7 +53,7 @@ def main(url: str, output: str = None):
         click.echo("  Lightspeed: https://www.lightspeedmagazine.com/issues/MMM-YYYY-issue-NNN/")
         sys.exit(1)
 
-    zine_name, issue_num = parsed
+    zine_name, issue_num, issue_date = parsed
     display_name = get_zine_display_name(zine_name)
     base_url = get_zine_base_url(zine_name)
 
@@ -107,7 +107,7 @@ def main(url: str, output: str = None):
         issue = Issue(
             number=issue_num,
             title=f"Issue {issue_num}",
-            issue_date=datetime.now().date(),
+            issue_date=issue_date if issue_date else datetime.now().date(),
             cover_url="",
         )
 
