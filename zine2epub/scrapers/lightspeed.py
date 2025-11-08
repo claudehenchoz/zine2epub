@@ -85,9 +85,31 @@ class LightspeedMagazineScraper(BaseScraper):
         Returns:
             Issue object populated with articles
         """
-        # Construct issue URL
-        issue_url = f"{self.zine.base_url}/issue-{issue.number}/"
-        html_content = self.fetch_html(issue_url)
+        # Try multiple possible URL patterns
+        # Lightspeed uses /issues/{month}-{year}-issue-{number}/ format
+        # We need to try different patterns or get the URL from the issue title
+        possible_urls = [
+            f"{self.zine.base_url}/issue-{issue.number}/",
+            f"{self.zine.base_url}/issues/issue-{issue.number}/",
+        ]
+
+        # If we have the issue date, construct the full URL format
+        if issue.issue_date:
+            month_abbr = issue.issue_date.strftime('%b').lower()
+            year = issue.issue_date.year
+            possible_urls.insert(0, f"{self.zine.base_url}/issues/{month_abbr}-{year}-issue-{issue.number}/")
+
+        html_content = None
+        for url in possible_urls:
+            try:
+                html_content = self.fetch_html(url)
+                break
+            except Exception:
+                continue
+
+        if not html_content:
+            return issue
+
         tree = self.parse_html(html_content)
 
         # Extract cover image
@@ -102,48 +124,59 @@ class LightspeedMagazineScraper(BaseScraper):
         # Extract articles
         articles = []
 
-        # Look for fiction and non-fiction sections
-        content_area = tree.cssselect('.entry-content, .issue-content, main')
-        if not content_area:
-            return issue
+        # Lightspeed shows articles as <div class="post"> elements with <h2 class="posttitle"> headers
+        # Skip the first post which is the issue title itself
+        posts = tree.cssselect('.post')
 
-        content = content_area[0]
+        for post in posts[1:]:  # Skip first post (issue title)
+            # Get title element
+            title_elem = post.cssselect('.posttitle')
+            if not title_elem:
+                continue
 
-        # Find all article links in the content
-        article_links = content.cssselect('a[href*="fiction"], a[href*="story"]')
+            title_elem = title_elem[0]
 
-        for link in article_links:
+            # Get link if available
+            links = title_elem.cssselect('a')
+            if not links:
+                # Some articles might not have links (subscriber-only content)
+                title = title_elem.text_content().strip()
+                if title:
+                    article = Article(
+                        title=title,
+                        author="Unknown",
+                        content_url="",
+                        article_type="fiction",
+                        is_available=False,
+                    )
+                    articles.append(article)
+                continue
+
+            link = links[0]
             title = link.text_content().strip()
             url = link.get('href', '')
 
             if not title or not url:
                 continue
 
+            # Skip if this is a link back to the issues page
+            if '/issues/' in url and 'issue-' in url:
+                continue
+
             if not url.startswith('http'):
                 url = self.zine.base_url.rstrip('/') + url
 
-            # Try to find author
-            parent = link.getparent()
-            parent_text = parent.text_content() if parent is not None else ''
-            author_match = re.search(r'by\s+([\w\s.]+)', parent_text, re.IGNORECASE)
-
-            if not author_match:
-                # Look for author in adjacent elements
-                siblings = list(parent) if parent is not None else []
-                for sibling in siblings:
-                    sibling_text = sibling.text_content()
-                    author_match = re.search(r'by\s+([\w\s.]+)', sibling_text, re.IGNORECASE)
-                    if author_match:
-                        break
-
+            # Try to find author - look for "by Author Name" in the post
+            post_text = post.text_content()
+            author_match = re.search(r'by\s+([\w\s.]+?)(?:\s*\||$)', post_text, re.IGNORECASE)
             author = author_match.group(1).strip() if author_match else "Unknown"
 
             # Check availability
-            is_available = 'coming soon' not in parent_text.lower()
+            is_available = True  # If there's a link, assume it's available
 
-            # Determine article type
+            # Determine article type from URL
             article_type = "fiction"
-            if any(word in url.lower() for word in ['non-fiction', 'nonfiction', 'essay', 'interview']):
+            if any(word in url.lower() for word in ['/nonfiction/', '/non-fiction/', '/editorial/']):
                 article_type = "non-fiction"
 
             article = Article(
@@ -151,35 +184,6 @@ class LightspeedMagazineScraper(BaseScraper):
                 author=author,
                 content_url=url,
                 article_type=article_type,
-                is_available=is_available,
-            )
-            articles.append(article)
-
-        # Also check for non-fiction explicitly
-        nonfiction_links = content.cssselect('a[href*="non-fiction"], a[href*="nonfiction"], a[href*="essay"]')
-
-        for link in nonfiction_links:
-            title = link.text_content().strip()
-            url = link.get('href', '')
-
-            if not title or not url:
-                continue
-
-            if not url.startswith('http'):
-                url = self.zine.base_url.rstrip('/') + url
-
-            parent = link.getparent()
-            parent_text = parent.text_content() if parent is not None else ''
-            author_match = re.search(r'by\s+([\w\s.]+)', parent_text, re.IGNORECASE)
-            author = author_match.group(1).strip() if author_match else "Unknown"
-
-            is_available = 'coming soon' not in parent_text.lower()
-
-            article = Article(
-                title=title,
-                author=author,
-                content_url=url,
-                article_type="non-fiction",
                 is_available=is_available,
             )
             articles.append(article)

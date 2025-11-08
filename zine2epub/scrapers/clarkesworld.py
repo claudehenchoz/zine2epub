@@ -115,15 +115,23 @@ class ClarkesworldScraper(BaseScraper):
             Issue object populated with articles
         """
         # Try to fetch the issue page
-        # Current issue might be on homepage, back issues have their own pages
-        issue_url = f"{self.zine.base_url}/issue_{issue.number}"
+        # Current issue might be on homepage, back issues at /issue_NNN or /prior/issue_NNN/
+        possible_urls = [
+            f"{self.zine.base_url}/issue_{issue.number}",
+            f"{self.zine.base_url}/prior/issue_{issue.number}/",
+            self.zine.base_url,  # Homepage for current issue
+        ]
 
-        try:
-            html_content = self.fetch_html(issue_url)
-        except Exception:
-            # If issue page doesn't exist, try the homepage (for current issue)
-            issue_url = self.zine.base_url
-            html_content = self.fetch_html(issue_url)
+        html_content = None
+        for issue_url in possible_urls:
+            try:
+                html_content = self.fetch_html(issue_url)
+                break
+            except Exception:
+                continue
+
+        if not html_content:
+            return issue
 
         tree = self.parse_html(html_content)
 

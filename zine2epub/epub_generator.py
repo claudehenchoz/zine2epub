@@ -170,9 +170,6 @@ def generate_filename(zine_name: str, issue: Issue) -> str:
         issue: Issue object
 
     Returns:
-        Filename in format: ZineName_IssueNNN_YYYY-MM.epub
+        Filename in format: ZineName - Issue NNN.epub
     """
-    # Clean zine name (remove spaces, special chars)
-    clean_name = zine_name.replace(" ", "")
-
-    return f"{clean_name}_Issue{issue.number:03d}_{issue.date_str}.epub"
+    return f"{zine_name} - Issue {issue.number}.epub"
