@@ -1,0 +1,140 @@
+/* EPUB Stylesheet for zine2epub */
+
+body {
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.6;
+    margin: 1em;
+    color: #333;
+}
+
+h1 {
+    font-size: 1.8em;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    color: #000;
+}
+
+h2 {
+    font-size: 1.4em;
+    margin-top: 0.8em;
+    margin-bottom: 0.4em;
+}
+
+h3 {
+    font-size: 1.2em;
+    margin-top: 0.6em;
+    margin-bottom: 0.3em;
+}
+
+p {
+    margin: 0.8em 0;
+    text-indent: 1.5em;
+}
+
+p:first-of-type,
+.no-indent {
+    text-indent: 0;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 2em 0;
+}
+
+/* Article styling */
+.article {
+    margin: 2em 0;
+}
+
+.article-title {
+    text-align: center;
+    font-weight: bold;
+    text-indent: 0;
+}
+
+.article-author {
+    text-align: center;
+    font-style: italic;
+    font-size: 1.1em;
+    margin-bottom: 1.5em;
+    text-indent: 0;
+}
+
+.article-content p:first-child {
+    text-indent: 0;
+}
+
+/* Table of Contents styling */
+nav[epub\:type="toc"] h1 {
+    text-align: center;
+    margin-bottom: 1em;
+}
+
+nav[epub\:type="toc"] ol {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+nav[epub\:type="toc"] li {
+    margin-bottom: 0.8em;
+    text-indent: 0;
+}
+
+nav[epub\:type="toc"] a {
+    text-decoration: none;
+    color: #0066cc;
+    font-weight: bold;
+}
+
+nav[epub\:type="toc"] .author {
+    display: block;
+    font-style: italic;
+    font-size: 0.9em;
+    margin-left: 1em;
+    color: #666;
+}
+
+nav[epub\:type="toc"] .unavailable {
+    display: block;
+    font-size: 0.85em;
+    margin-left: 1em;
+    color: #999;
+    font-style: italic;
+}
+
+/* Placeholder content styling */
+.placeholder-content {
+    text-align: center;
+    padding: 3em 1em;
+    color: #666;
+}
+
+.placeholder-content p {
+    text-indent: 0;
+}
+
+/* Blockquote styling */
+blockquote {
+    margin: 1em 2em;
+    font-style: italic;
+    border-left: 3px solid #ccc;
+    padding-left: 1em;
+}
+
+/* Image styling */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+}
+
+/* Emphasis */
+em {
+    font-style: italic;
+}
+
+strong {
+    font-weight: bold;
+}

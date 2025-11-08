@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+    <meta charset="UTF-8"/>
+    <title>{{ title }}</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+    <div class="article">
+        <h1 class="article-title">{{ title }}</h1>
+        <p class="article-author">by {{ author }}</p>
+        <hr/>
+        <div class="article-content">
+            {{ content|safe }}
+        </div>
+    </div>
+</body>
+</html>

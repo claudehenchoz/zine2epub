@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Table of Contents</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+</head>
+<body>
+    <nav epub:type="toc">
+        <h1>Table of Contents</h1>
+        <ol>
+            {% for article in articles %}
+            <li>
+                <a href="{{ article.filename }}">{{ article.title }}</a>
+                <span class="author">by {{ article.author }}</span>
+                {% if not article.is_available %}
+                <span class="unavailable">(Coming Soon)</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </nav>
+</body>
+</html>
