@@ -49,7 +49,7 @@ class LightspeedMagazineScraper(BaseScraper):
         tree = self.parse_html(html_content)
 
         # Extract cover image
-        cover_img = tree.cssselect('img.issue-cover, .entry-content img, article img, .featured-image img')
+        cover_img = tree.cssselect('div.content_box div.post_wrapper div.meta_content a img')
         if cover_img:
             cover_url = cover_img[0].get('src', '')
             if cover_url and not cover_url.startswith('http'):
@@ -177,7 +177,7 @@ class LightspeedMagazineScraper(BaseScraper):
 
         # Remove unwanted elements
         for unwanted in content_element.cssselect(
-            'script, style, .social-share, .author-bio, nav, footer, .sharedaddy, .addtoany_share_save_container'
+            'script, style, .social-share, .author-bio, nav, footer, .sharedaddy, .addtoany_share_save_container, div.callout, div.callouts_container'
         ):
             unwanted.getparent().remove(unwanted)
 

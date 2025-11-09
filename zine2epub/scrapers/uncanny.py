@@ -33,7 +33,7 @@ class UncannyMagazineScraper(BaseScraper):
 
         # Update cover image if not set
         if not issue.cover_url:
-            cover_img = tree.cssselect('img[alt*="cover"], .entry-content img')
+            cover_img = tree.cssselect('div.featured_issue_thumbnail a img')
             if cover_img:
                 cover_url = cover_img[0].get('src', '')
                 if cover_url and not cover_url.startswith('http'):
