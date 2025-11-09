@@ -5,10 +5,8 @@ from datetime import datetime, date
 from typing import Optional, Tuple
 from urllib.parse import urlparse
 
-from zine2epub.scrapers.uncanny import WRITTEN_NUMBERS
 
-
-def parse_zine_url(url: str) -> Optional[Tuple[str, Optional[int], Optional[date]]]:
+def parse_zine_url(url: str) -> Optional[Tuple[str, Optional[int | str], Optional[date]]]:
     """Parse a zine URL and extract zine name, issue number, and date.
 
     Args:
@@ -16,6 +14,7 @@ def parse_zine_url(url: str) -> Optional[Tuple[str, Optional[int], Optional[date
 
     Returns:
         Tuple of (zine_name, issue_number, issue_date) or None if not recognized
+        issue_number can be int or str (str for Uncanny Magazine's written numbers)
         issue_date will be None if it can't be determined from the URL
 
     Examples:
@@ -26,7 +25,7 @@ def parse_zine_url(url: str) -> Optional[Tuple[str, Optional[int], Optional[date
         ("clarkesworld", 229, None)
 
         >>> parse_zine_url("https://www.uncannymagazine.com/issues/uncanny-magazine-issue-sixty-seven/")
-        ("uncanny", 67, None)
+        ("uncanny", "sixty-seven", None)
 
         >>> parse_zine_url("https://www.lightspeedmagazine.com/issues/nov-2025-issue-186/")
         ("lightspeed", 186, date(2025, 11, 1))
@@ -49,12 +48,11 @@ def parse_zine_url(url: str) -> Optional[Tuple[str, Optional[int], Optional[date
     # Uncanny Magazine
     elif "uncannymagazine.com" in domain or "uncanny" in domain:
         # Issue URL: /issues/uncanny-magazine-issue-WRITTEN/
+        # We keep the written form (e.g., "sixty-seven") as the issue number
         issue_match = re.search(r'uncanny-magazine-issue-([\w-]+)', path)
         if issue_match:
-            written_num = issue_match.group(1)
-            issue_num = WRITTEN_NUMBERS.get(written_num)
-            if issue_num:
-                return ("uncanny", issue_num, None)
+            written_num = issue_match.group(1)  # e.g., "sixty-seven"
+            return ("uncanny", written_num, None)
 
     # Lightspeed Magazine
     elif "lightspeedmagazine.com" in domain or "lightspeed" in domain:

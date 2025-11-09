@@ -24,7 +24,7 @@ class Article:
 class Issue:
     """Represents a single issue of a zine."""
 
-    number: int
+    number: int | str  # int for most zines, str for written numbers (e.g., "sixty-seven")
     title: str
     issue_date: date
     cover_url: str
